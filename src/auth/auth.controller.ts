@@ -1,4 +1,10 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -14,6 +20,7 @@ export class AuthController {
   @Get(':strategy/callback')
   @UseGuards(AuthGuard)
   login(@Req() req: Request) {
-    return this.authService.login(req.user!);
+    if (!req.user) throw new UnauthorizedException();
+    return this.authService.login(req.user);
   }
 }
