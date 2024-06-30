@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { SignUpDto } from './auth.dto';
+import { Profile } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -55,5 +56,30 @@ export class AuthService {
       throw new BadRequestException('Invalid email or password');
 
     return authStrategy.user;
+  }
+
+  findOrCreateUserByProfile(profile: Profile) {
+    return this.prismaService.authStrategy
+      .upsert({
+        where: {
+          strategy_id: {
+            strategy: profile.provider,
+            id: profile.id,
+          },
+        },
+        create: {
+          strategy: profile.provider,
+          id: profile.id,
+          user: {
+            create: {
+              name: profile.displayName,
+              email: profile.emails?.[0].value,
+              photo: profile.photos?.[0].value,
+            },
+          },
+        },
+        update: {},
+      })
+      .user();
   }
 }

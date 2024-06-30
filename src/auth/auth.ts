@@ -4,3 +4,7 @@ export class Token {
   @ApiProperty()
   accessToken: string;
 }
+
+export enum OAuthProvider {
+  Google = 'google',
+}
