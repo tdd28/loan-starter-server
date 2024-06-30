@@ -8,6 +8,9 @@ const port = process.env.PORT || 3000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({
+    origin: [/localhost/, 'https://loan-starter.vercel.app'],
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Loan Starter')
