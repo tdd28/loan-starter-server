@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { SignUpDto } from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,16 +18,18 @@ export class AuthService {
     };
   }
 
-  async signUp(username: string, password: string) {
+  async signUp({ name, email, password }: SignUpDto) {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
     return await this.prismaService.user.create({
       data: {
+        email,
+        name,
         authStrategies: {
           create: {
             strategy: 'local',
-            id: username,
+            id: email,
             secret: hashedPassword,
           },
         },
@@ -34,7 +37,7 @@ export class AuthService {
     });
   }
 
-  async findUserByLocalStrategy(username: string, password: string) {
+  async findUserByLocalStrategy(email: string, password: string) {
     const authStrategy =
       await this.prismaService.authStrategy.findUniqueOrThrow({
         include: {
@@ -43,13 +46,13 @@ export class AuthService {
         where: {
           strategy_id: {
             strategy: 'local',
-            id: username,
+            id: email,
           },
         },
       });
 
     if (!(await bcrypt.compare(password, authStrategy.secret!)))
-      throw new BadRequestException('Invalid username or password');
+      throw new BadRequestException('Invalid email or password');
 
     return authStrategy.user;
   }

@@ -12,7 +12,7 @@ export class LocalStrategy extends PassportStrategy(PassportLocalStrategy) {
     super();
   }
 
-  validate: PassportLocalVerifyFunction = async (username, password) => {
-    return await this.authService.findUserByLocalStrategy(username, password);
+  validate: PassportLocalVerifyFunction = async (email, password) => {
+    return await this.authService.findUserByLocalStrategy(email, password);
   };
 }

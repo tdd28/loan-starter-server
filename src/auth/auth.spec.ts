@@ -1,4 +1,4 @@
-import { Token } from './auth.entity';
+import { Token } from './auth';
 
 describe('Token', () => {
   it('should be defined', () => {
