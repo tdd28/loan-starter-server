@@ -14,7 +14,19 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String? @unique
-  name  String?
+  id             Int            @id @default(autoincrement())
+  email          String?        @unique
+  name           String?
+  authStrategies AuthStrategy[]
+}
+
+model AuthStrategy {
+  strategy String
+  id       String
+  secret   String?
+
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id])
+
+  @@id([strategy, id])
 }
