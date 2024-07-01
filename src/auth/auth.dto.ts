@@ -17,10 +17,16 @@ export class SignUpDto {
 
 export class SignInDto {
   @ApiProperty()
-  @IsString()
+  @IsEmail()
   email: string;
 
   @ApiProperty()
   @IsNotEmpty()
   password: string;
+}
+
+export class RefreshTokenDto {
+  @ApiProperty()
+  @IsString()
+  token: string
 }

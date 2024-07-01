@@ -8,6 +8,8 @@ import { Profile } from 'passport';
 
 @Injectable()
 export class AuthService {
+  private refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
@@ -15,7 +17,8 @@ export class AuthService {
 
   async signIn(user: User) {
     return {
-      accessToken: this.jwtService.sign({ sub: user.id }),
+      accessToken: this.generateAccessToken(user.id),
+      refreshToken: this.generateRefreshToken(user.id)
     };
   }
 
@@ -36,6 +39,18 @@ export class AuthService {
         },
       },
     });
+  }
+
+  refresh(token: string) {
+    try {    
+      const { sub } = this.jwtService.verify(token, { secret: this.refreshTokenSecret })
+  
+      return {
+        accessToken: this.generateAccessToken(+sub)
+      }
+    } catch (error) {
+      throw new BadRequestException(error)    
+    }
   }
 
   async findUserByLocalStrategy(email: string, password: string) {
@@ -81,5 +96,16 @@ export class AuthService {
         update: {},
       })
       .user();
+  }
+
+  private generateAccessToken(userId: number) {
+    return this.jwtService.sign({ sub: userId })
+  }
+
+  private generateRefreshToken(userId: number) {
+    return this.jwtService.sign({ sub: userId }, {
+      expiresIn: '90d',
+      secret: this.refreshTokenSecret,
+    })
   }
 }

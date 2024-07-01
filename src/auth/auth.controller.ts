@@ -10,10 +10,10 @@ import {
 import { LocalAuthGuard, OAuthGuard } from './auth.guard';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { SignInDto, SignUpDto } from './auth.dto';
-import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RefreshTokenDto, SignInDto, SignUpDto } from './auth.dto';
+import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '../user/user';
-import { OAuthProvider, Token } from './auth';
+import { AccessToken, OAuthProvider, Token } from './auth';
 import { HttpException } from '../common/common';
 
 @ApiTags('auth')
@@ -33,6 +33,7 @@ export class AuthController {
     return this.authService.signUp(dto);
   }
 
+  @ApiBody({ type: SignInDto })
   @ApiResponse({ status: 200, description: 'OK.', type: Token })
   @ApiResponse({
     status: 400,
@@ -42,8 +43,17 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   @HttpCode(200)
-  signIn(@Req() req: Request, @Body() _: SignInDto) {
+  signIn(@Req() req: Request) {
     return this.authService.signIn(req.user!);
+  }
+
+
+  @ApiResponse({ status: 200, description: 'OK.', type: AccessToken })
+  @ApiResponse({ status: 400, description: 'Bad Request.', type: HttpException })
+  @Post('refresh')
+  @HttpCode(200)
+  refresh(@Body() { token }: RefreshTokenDto) {
+    return this.authService.refresh(token)
   }
 }
 
