@@ -28,5 +28,5 @@ export class SignInDto {
 export class RefreshTokenDto {
   @ApiProperty()
   @IsString()
-  token: string
+  token: string;
 }

@@ -7,11 +7,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { LocalAuthGuard, OAuthGuard } from './auth.guard';
+import { JwtAuthGuard, LocalAuthGuard, OAuthGuard } from './auth.guard';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RefreshTokenDto, SignInDto, SignUpDto } from './auth.dto';
-import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '../user/user';
 import { AccessToken, OAuthProvider, Token } from './auth';
 import { HttpException } from '../common/common';
@@ -47,13 +54,29 @@ export class AuthController {
     return this.authService.signIn(req.user!);
   }
 
-
   @ApiResponse({ status: 200, description: 'OK.', type: AccessToken })
-  @ApiResponse({ status: 400, description: 'Bad Request.', type: HttpException })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request.',
+    type: HttpException,
+  })
   @Post('refresh')
   @HttpCode(200)
   refresh(@Body() { token }: RefreshTokenDto) {
-    return this.authService.refresh(token)
+    return this.authService.refresh(token);
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'OK.', type: User })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+    type: HttpException,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('user')
+  user(@Req() req: Request) {
+    return req.user;
   }
 }
 

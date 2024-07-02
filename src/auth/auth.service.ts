@@ -5,10 +5,11 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { SignUpDto } from './auth.dto';
 import { Profile } from 'passport';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
-  private refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET
+  private refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -18,7 +19,7 @@ export class AuthService {
   async signIn(user: User) {
     return {
       accessToken: this.generateAccessToken(user.id),
-      refreshToken: this.generateRefreshToken(user.id)
+      refreshToken: this.generateRefreshToken(user.id),
     };
   }
 
@@ -42,15 +43,21 @@ export class AuthService {
   }
 
   refresh(token: string) {
-    try {    
-      const { sub } = this.jwtService.verify(token, { secret: this.refreshTokenSecret })
-  
+    try {
+      const { sub } = this.jwtService.verify(token, {
+        secret: this.refreshTokenSecret,
+      });
+
       return {
-        accessToken: this.generateAccessToken(+sub)
-      }
+        accessToken: this.generateAccessToken(+sub),
+      };
     } catch (error) {
-      throw new BadRequestException(error)    
+      throw new BadRequestException(error);
     }
+  }
+
+  findUserByJwtPayload({ sub }: JwtPayload) {
+    return this.prismaService.user.findUnique({ where: { id: +sub! } });
   }
 
   async findUserByLocalStrategy(email: string, password: string) {
@@ -99,13 +106,16 @@ export class AuthService {
   }
 
   private generateAccessToken(userId: number) {
-    return this.jwtService.sign({ sub: userId })
+    return this.jwtService.sign({ sub: userId });
   }
 
   private generateRefreshToken(userId: number) {
-    return this.jwtService.sign({ sub: userId }, {
-      expiresIn: '90d',
-      secret: this.refreshTokenSecret,
-    })
+    return this.jwtService.sign(
+      { sub: userId },
+      {
+        expiresIn: '90d',
+        secret: this.refreshTokenSecret,
+      },
+    );
   }
 }

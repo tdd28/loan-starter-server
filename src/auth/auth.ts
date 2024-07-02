@@ -14,5 +14,5 @@ export enum OAuthProvider {
 
 export class AccessToken {
   @ApiProperty()
-  accessToken: string; 
+  accessToken: string;
 }

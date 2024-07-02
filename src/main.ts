@@ -16,6 +16,7 @@ async function bootstrap() {
     .setTitle('Loan Starter')
     .setDescription('Loan Starter API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);

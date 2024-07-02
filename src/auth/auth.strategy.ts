@@ -9,12 +9,31 @@ import {
   Profile as PassportGoogleProfile,
 } from 'passport-google-oauth';
 import { AuthService } from './auth.service';
+import {
+  Strategy as PassportJwtStrategy,
+  ExtractJwt,
+  VerifyCallback as PassportJwtVerifyCallback,
+} from 'passport-jwt';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(PassportJwtStrategy) {
+  constructor(private readonly authService: AuthService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.ACCESS_TOKEN_SECRET,
+    });
+  }
+
+  validate: PassportJwtVerifyCallback = (payload) => {
+    return this.authService.findUserByJwtPayload(payload);
+  };
+}
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(PassportLocalStrategy) {
   constructor(private readonly authService: AuthService) {
     super({
-      usernameField: 'email'
+      usernameField: 'email',
     });
   }
 

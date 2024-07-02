@@ -7,6 +7,9 @@ import { Observable } from 'rxjs';
 export class LocalAuthGuard extends AuthGuard('local') {}
 
 @Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+@Injectable()
 export class OAuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
